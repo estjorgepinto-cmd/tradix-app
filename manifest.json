@@ -1,16 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tradix Simulator</title>
-    
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#000000">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2534/2534358.png">
-    </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/App.tsx"></script>
-  </body>
-</html>
+{
+  "name": "Tradix Simulator",
+  "short_name": "Tradix",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000"
+}
