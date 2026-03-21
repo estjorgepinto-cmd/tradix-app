@@ -1,160 +1,98 @@
-import React, { useState, useEffect, useRef } from "react";
-import { createRoot } from "react-dom/client";
-import {
-  createChart,
-  CrosshairMode,
-} from "lightweight-charts";
-import {
-  Wallet,
-  TrendingUp,
-  Brain,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
+import React, { useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { createChart, ColorType } from 'lightweight-charts';
+import { TrendingUp, TrendingDown, Wallet, BarChart3, Settings, User } from 'lucide-react';
 
-// --- Configuración de Activos ---
-const ASSETS = [
-  { symbol: "BTC", name: "Bitcoin", basePrice: 65000, volatility: 0.012 },
-  { symbol: "ETH", name: "Ethereum", basePrice: 3500, volatility: 0.015 },
-  { symbol: "AAPL", name: "Apple", basePrice: 175, volatility: 0.008 },
-  { symbol: "EUR/USD", name: "Euro/Dólar", basePrice: 1.085, volatility: 0.003 },
-];
-
-const TIMEFRAME = { label: "1H", seconds: 3600, count: 80 };
-
-// --- Generador de Velas (Simulación) ---
-function genCandles(basePrice: number, vol: number, count: number, secs: number) {
-  const out = [];
-  let p = basePrice * (0.94 + Math.random() * 0.12);
-  const now = Math.floor(Date.now() / 1000);
-  for (let i = count - 1; i >= 0; i--) {
-    const o = p;
-    const drift = (Math.random() - 0.48) * vol * o;
-    const c = Math.max(o + drift, o * 0.001);
-    const wick = vol * 0.35 * o;
-    out.push({
-      time: now - i * secs,
-      open: +o.toFixed(4),
-      high: +(Math.max(o, c) + Math.random() * wick).toFixed(4),
-      low: +(Math.min(o, c) - Math.random() * wick).toFixed(4),
-      close: +c.toFixed(4),
-    });
-    p = c;
-  }
-  return out;
-}
-
-const CHART_THEME = {
-  layout: { background: { color: "#0f172a" }, textColor: "#64748b", fontSize: 12 },
-  grid: { vertLines: { color: "rgba(30,41,59,0.5)" }, horzLines: { color: "rgba(30,41,59,0.5)" } },
-  crosshair: { mode: CrosshairMode.Normal },
-  rightPriceScale: { borderColor: "#1e293b" },
-  timeScale: { borderColor: "#1e293b", timeVisible: true },
-};
-
-function Simulator() {
-  const [asset, setAsset] = useState(ASSETS[0]);
-  const mainRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<any>(null);
-  const seriesRef = useRef<any>(null);
+const TradixApp = () => {
+  const chartContainerRef = useRef(null);
+  const [balance, setBalance] = useState(10000);
+  const [symbol, setSymbol] = useState('BTC/USD');
 
   useEffect(() => {
-    if (!mainRef.current) return;
+    if (!chartContainerRef.current) return;
 
-    const chart = createChart(mainRef.current, {
-      ...CHART_THEME,
-      width: mainRef.current.clientWidth,
+    const chart = createChart(chartContainerRef.current, {
+      layout: { background: { type: ColorType.Solid, color: '#000000' }, textColor: '#d1d5db' },
+      grid: { vertLines: { color: '#1f2937' }, horzLines: { color: '#1f2937' } },
+      width: chartContainerRef.current.clientWidth,
       height: 400,
     });
 
-    const series = chart.addCandlestickSeries({
-      upColor: "#10b981",
-      downColor: "#e11d48",
-      borderVisible: false,
-      wickUpColor: "#10b981",
-      wickDownColor: "#e11d48",
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: '#22c55e', downColor: '#ef4444', borderVisible: false, wickUpColor: '#22c55e', wickDownColor: '#ef4444',
     });
 
-    chartRef.current = chart;
-    seriesRef.current = series;
+    // Datos simulados
+    const data = [];
+    let time = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000);
+    for (let i = 0; i < 100; i++) {
+      data.push({
+        time: time.toISOString().split('T')[0],
+        open: 50000 + Math.random() * 1000,
+        high: 52000 + Math.random() * 1000,
+        low: 48000 + Math.random() * 1000,
+        close: 51000 + Math.random() * 1000,
+      });
+      time.setDate(time.getDate() + 1);
+    }
+    candleSeries.setData(data);
 
-    const initialData = genCandles(asset.basePrice, asset.volatility, TIMEFRAME.count, TIMEFRAME.seconds);
-    series.setData(initialData as any);
-
-    const handleResize = () => {
-      chart.applyOptions({ width: mainRef.current?.clientWidth });
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      chart.remove();
-    };
-  }, [asset]);
+    const handleResize = () => chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+    window.addEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); chart.remove(); };
+  }, [symbol]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 font-sans">
-      <div className="max-w-6xl mx-auto space-y-4">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 p-4 rounded-xl border border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg"><TrendingUp size={24} /></div>
-            <div>
-              <h1 className="text-xl font-bold">TRADIX SIMULATOR</h1>
-              <p className="text-xs text-slate-400">Entrenamiento en tiempo real</p>
-            </div>
+    <div class="min-h-screen bg-black text-white font-sans">
+      <nav class="border-b border-gray-800 p-4 flex justify-between items-center bg-gray-900/50">
+        <div class="flex items-center gap-2">
+          <div class="bg-blue-600 p-1.5 rounded-lg"><BarChart3 size={24}/></div>
+          <span class="text-xl font-bold tracking-tighter">TRADIX</span>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-full">
+            <Wallet size={18} class="text-blue-400"/>
+            <span class="font-mono text-green-400">${balance.toLocaleString()}</span>
           </div>
-          <div className="flex gap-2">
-            {ASSETS.map((a) => (
-              <button
-                key={a.symbol}
-                onClick={() => setAsset(a)}
-                className={`px-3 py-1 rounded-md text-sm transition ${
-                  asset.symbol === a.symbol ? "bg-blue-600" : "bg-slate-800 hover:bg-slate-700"
-                }`}
-              >
-                {a.symbol}
+          <User size={20} class="text-gray-400 cursor-pointer hover:text-white"/>
+        </div>
+      </nav>
+
+      <main class="p-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-3 space-y-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+            <div class="flex gap-4 mb-4">
+              {['BTC/USD', 'ETH/USD', 'AAPL', 'EUR/USD'].map((s) => (
+                <button 
+                  key={s}
+                  onClick={() => setSymbol(s)}
+                  class={`px-4 py-2 rounded-lg text-sm font-medium transition ${symbol === s ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <div ref={chartContainerRef} class="w-full"></div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <h2 class="text-lg font-semibold mb-4">Operar</h2>
+            <div class="space-y-4">
+              <button class="w-full bg-green-600 hover:bg-green-700 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition">
+                <TrendingUp size={20}/> COMPRAR
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Gráfico */}
-        <div className="bg-slate-900 p-2 rounded-xl border border-slate-800">
-          <div ref={mainRef} className="w-full" />
-        </div>
-
-        {/* Panel Inferior */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-3">
-            <Brain className="text-blue-500" size={32} />
-            <h3 className="font-semibold">Modo Práctica</h3>
-            <p className="text-sm text-slate-400 text-center">Analiza y decide tu entrada.</p>
-          </div>
-          <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 flex flex-col gap-3">
-            <button className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold flex items-center justify-center gap-2">
-              <ChevronUp /> COMPRAR
-            </button>
-            <button className="w-full py-3 bg-rose-600 hover:bg-rose-500 rounded-lg font-bold flex items-center justify-center gap-2">
-              <ChevronDown /> VENDER
-            </button>
-          </div>
-          <div className="bg-slate-900 p-5 rounded-xl border border-slate-800">
-            <div className="flex items-center gap-2 mb-3">
-              <Wallet className="text-amber-500" size={20} />
-              <span className="text-sm font-medium">Balance Virtual</span>
+              <button class="w-full bg-red-600 hover:bg-red-700 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition">
+                <TrendingDown size={20}/> VENDER
+              </button>
             </div>
-            <div className="text-2xl font-mono font-bold text-emerald-400">$10,000.00</div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
-}
+};
 
-// --- Renderizado de la App ---
-const container = document.getElementById("root");
-if (container) {
-  const root = createRoot(container);
-  root.render(<Simulator />);
-}
+const root = createRoot(document.getElementById('root')!);
+root.render(<TradixApp />);
