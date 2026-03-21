@@ -3,10 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tradix Simulator</title>
+    <title>Tradix | Trading Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { background-color: black; margin: 0; overflow-x: hidden; }
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #000; }
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
   </head>
-  <body class="bg-black">
+  <body>
     <div id="root"></div>
     <script type="module" src="/main.tsx"></script>
   </body>
